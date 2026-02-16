@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+
+# デフォルト設定
+DEFAULT_WORK_TIME=25
+DEFAULT_BREAK_TIME=5
+
+# BGMキーワードのリスト
+BGM_KEYWORDS=(
+	"piano study music 1 hour"
+	"relaxing piano focus music"
+	"lofi piano study beats"
+	"calm piano concentration music"
+	"ambient piano work music"
+)
+
+# 必要なコマンドのチェック
+check_dependencies() {
+	local missing=()
+	
+	if ! command -v yt-dlp &> /dev/null; then
+		missing+=("yt-dlp")
+	fi
+	
+	if ! command -v mpv &> /dev/null; then
+		missing+=("mpv")
+	fi
+	
+	if [ ${#missing[@]} -gt 0 ]; then
+		echo "❌ 以下のコマンドがインストールされていません: ${missing[*]}"
+		echo ""
+		echo "インストール方法:"
+		echo "  Ubuntu/Debian: sudo apt-get install -y yt-dlp mpv"
+		echo "  macOS:         brew install yt-dlp mpv"
+		echo "  Arch Linux:    sudo pacman -S yt-dlp mpv"
+		exit 1
+	fi
+}
+
+# BGMを再生
+play_bgm() {
+	# ランダムにキーワードを選択
+	local keyword="${BGM_KEYWORDS[$RANDOM % ${#BGM_KEYWORDS[@]}]}"
+	echo "🎵 BGM検索中: $keyword"
+	
+	# YouTubeから動画URLを取得（最初の検索結果）
+	local video_url=$(yt-dlp --get-id "ytsearch1:$keyword" 2>/dev/null | head -1)
+	
+	if [ -z "$video_url" ]; then
+		echo "⚠️  BGMの取得に失敗しました"
+		return 1
+	fi
+	
+	echo "🎹 BGM再生開始..."
+	# mpvをバックグラウンドで起動（音声のみ、音量50%）
+	mpv --no-video --volume=50 "https://www.youtube.com/watch?v=$video_url" &> /dev/null &
+	BGM_PID=$!
+	
+	# 少し待って再生が始まるのを確認
+	sleep 2
+	
+	# プロセスが生きているか確認
+	if ! kill -0 $BGM_PID 2>/dev/null; then
+		echo "⚠️  BGMの再生開始に失敗しました"
+		return 1
+	fi
+	
+	echo "✅ BGM再生中 (PID: $BGM_PID)"
+	return 0
+}
+
+# BGMを停止
+stop_bgm() {
+	if [ -n "$BGM_PID" ] && kill -0 $BGM_PID 2>/dev/null; then
+		echo "🔇 BGM停止中..."
+		kill $BGM_PID 2>/dev/null
+		wait $BGM_PID 2>/dev/null
+		BGM_PID=""
+	fi
+}
+
+# カウントダウン
+countdown() {
+	local seconds=$1
+	local label=$2
+	
+	while [ $seconds -gt 0 ]; do
+		local mins=$((seconds / 60))
+		local secs=$((seconds % 60))
+		printf "\r$label 残り時間: %02d:%02d" $mins $secs
+		sleep 1
+		((seconds--))
+	done
+	echo ""
+}
+
+# 通知音を鳴らす（システムのベル音）
+play_notification() {
+	# ベル音を3回鳴らす
+	for i in {1..3}; do
+		echo -e "\a"
+		sleep 0.5
+	done
+}
+
+# クリーンアップ（Ctrl+Cで終了した時も確実に停止）
+cleanup() {
+	echo ""
+	echo "🛑 終了処理中..."
+	stop_bgm
+	echo "👋 タイマーを終了しました"
+	exit 0
+}
+
+# SIGINTとSIGTERMをトラップ
+trap cleanup SIGINT SIGTERM
+
+# メイン処理
+main() {
+	echo "🍅 ポモドーロタイマー with BGM"
+	echo "================================"
+	echo ""
+	
+	# 依存関係チェック
+	check_dependencies
+	
+	# 時間設定の入力
+	echo "⚙️  時間設定:"
+	echo ""
+	
+	read -rp "作業時間を入力してください（分）[デフォルト: $DEFAULT_WORK_TIME]: " work_input
+	if [[ -z "$work_input" ]]; then
+		WORK_TIME=$DEFAULT_WORK_TIME
+	elif [[ "$work_input" =~ ^[0-9]+$ ]] && [ "$work_input" -gt 0 ]; then
+		WORK_TIME=$work_input
+	else
+		echo "❌ 無効な入力です。デフォルト値($DEFAULT_WORK_TIME分)を使用します"
+		WORK_TIME=$DEFAULT_WORK_TIME
+	fi
+	
+	read -rp "休憩時間を入力してください（分）[デフォルト: $DEFAULT_BREAK_TIME]: " break_input
+	if [[ -z "$break_input" ]]; then
+		BREAK_TIME=$DEFAULT_BREAK_TIME
+	elif [[ "$break_input" =~ ^[0-9]+$ ]] && [ "$break_input" -gt 0 ]; then
+		BREAK_TIME=$break_input
+	else
+		echo "❌ 無効な入力です。デフォルト値($DEFAULT_BREAK_TIME分)を使用します"
+		BREAK_TIME=$DEFAULT_BREAK_TIME
+	fi
+	
+	echo ""
+	echo "✅ 設定完了:"
+	echo "  作業時間: ${WORK_TIME}分"
+	echo "  休憩時間: ${BREAK_TIME}分"
+	echo ""
+	
+	read -rp "この設定で開始しますか？ (y/n): " answer
+	if [[ "$answer" != "y" ]]; then
+		echo "キャンセルしました"
+		exit 0
+	fi
+	
+	local session_count=0
+	
+	while true; do
+		((session_count++))
+		echo ""
+		echo "========================================"
+		echo "📍 セッション $session_count"
+		echo "========================================"
+		echo "⏰ 作業開始！集中しましょう！"
+		echo ""
+		
+		# BGM再生開始
+		if ! play_bgm; then
+			echo "⚠️  BGMなしで続行します"
+		fi
+		
+		# 作業時間カウントダウン
+		countdown $((WORK_TIME * 60)) "⏱️  作業中"
+		
+		# BGM停止
+		stop_bgm
+		
+		# 通知
+		echo "🎉 作業時間終了！お疲れ様でした！"
+		play_notification
+		
+		# 休憩するか確認
+		echo ""
+		read -rp "休憩しますか？ (y/n): " answer
+		if [[ "$answer" != "y" ]]; then
+			echo ""
+			echo "✅ 完了セッション数: $session_count"
+			break
+		fi
+		
+		# 休憩時間
+		echo ""
+		echo "☕ 休憩時間です。リラックスしましょう"
+		countdown $((BREAK_TIME * 60)) "🛌 休憩中"
+		
+		echo "🔔 休憩終了！"
+		play_notification
+		
+		# 続けるか確認
+		echo ""
+		read -rp "次のセッションを開始しますか？ (y/n): " answer
+		if [[ "$answer" != "y" ]]; then
+			echo ""
+			echo "✅ 完了セッション数: $session_count"
+			break
+		fi
+	done
+	
+	echo ""
+	echo "👋 お疲れ様でした！"
+}
+
+# スクリプト実行
+main

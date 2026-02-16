@@ -1,0 +1,67 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.*.sw?
+*.bak
+*.tmp
+
+# Logs
+*.log
+logs/
+*.out
+
+# Test files
+test/
+tests/
+*.test.sh
+
+# Temporary scripts
+temp_*
+scratch_*
+
+# Environment variables
+.env
+.env.local
+
+# Personal configuration (if you add config files later)
+config.local
+.pomodororc.local
