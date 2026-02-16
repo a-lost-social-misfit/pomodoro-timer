@@ -73,22 +73,22 @@ mpv --version
 
 ```bash
 # wgetを使う場合
-wget https://raw.githubusercontent.com/YOUR_USERNAME/pomodoro-timer/main/pomodoro_timer.sh
+wget https://raw.githubusercontent.com/a-lost-social-misfit/pomodoro-timer/main/pomodoro_timer.sh
 
 # curlを使う場合
-curl -O https://raw.githubusercontent.com/YOUR_USERNAME/pomodoro-timer/main/pomodoro_timer.sh
+curl -O https://raw.githubusercontent.com/a-lost-social-misfit/pomodoro-timer/main/pomodoro_timer.sh
 ```
 
 ### 2. 実行権限を付与
 
 ```bash
-chmod +x pomodoro_timer.sh
+chmod +x pomodoro_timer
 ```
 
 ### 3. 実行
 
 ```bash
-./pomodoro_timer.sh
+./pomodoro_timer
 ```
 
 ### 4. 時間を設定
