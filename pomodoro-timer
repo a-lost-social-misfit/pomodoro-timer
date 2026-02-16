@@ -38,9 +38,21 @@ check_dependencies() {
 
 # BGMを再生
 play_bgm() {
-	# ランダムにキーワードを選択
-	local keyword="${BGM_KEYWORDS[$RANDOM % ${#BGM_KEYWORDS[@]}]}"
-	echo "🎵 BGM検索中: $keyword"
+	local keyword=""
+	
+	# BGMモードに応じてキーワードを決定
+	if [ "$BGM_MODE" = "random" ]; then
+		# ランダムにキーワードを選択
+		keyword="${BGM_KEYWORDS[$RANDOM % ${#BGM_KEYWORDS[@]}]}"
+		echo "🎵 BGM検索中: $keyword"
+	elif [ "$BGM_MODE" = "custom" ]; then
+		# カスタムキーワード
+		keyword="$CUSTOM_KEYWORD"
+		echo "🎵 BGM検索中: $keyword"
+	else
+		# BGMなし
+		return 0
+	fi
 	
 	# YouTubeから動画URLを取得（最初の検索結果）
 	local video_url=$(yt-dlp --get-id "ytsearch1:$keyword" 2>/dev/null | head -1)
@@ -148,9 +160,45 @@ main() {
 	fi
 	
 	echo ""
+	echo "🎵 BGM設定:"
+	echo ""
+	read -rp "BGMを再生しますか？ (y/n) [デフォルト: y]: " bgm_answer
+	
+	if [[ -z "$bgm_answer" ]] || [[ "$bgm_answer" = "y" ]]; then
+		echo ""
+		echo "BGMモードを選択してください:"
+		echo "  1) ランダム選択（おすすめ）"
+		echo "  2) 自分でキーワードを入力"
+		read -rp "選択 (1/2) [デフォルト: 1]: " bgm_mode_input
+		
+		if [[ "$bgm_mode_input" = "2" ]]; then
+			BGM_MODE="custom"
+			echo ""
+			read -rp "検索キーワードを入力してください: " custom_input
+			if [[ -z "$custom_input" ]]; then
+				echo "❌ キーワードが空です。ランダム選択に切り替えます"
+				BGM_MODE="random"
+			else
+				CUSTOM_KEYWORD="$custom_input"
+			fi
+		else
+			BGM_MODE="random"
+		fi
+	else
+		BGM_MODE="none"
+	fi
+	
+	echo ""
 	echo "✅ 設定完了:"
 	echo "  作業時間: ${WORK_TIME}分"
 	echo "  休憩時間: ${BREAK_TIME}分"
+	if [ "$BGM_MODE" = "none" ]; then
+		echo "  BGM: なし"
+	elif [ "$BGM_MODE" = "random" ]; then
+		echo "  BGM: ランダム選択"
+	else
+		echo "  BGM: カスタム ($CUSTOM_KEYWORD)"
+	fi
 	echo ""
 	
 	read -rp "この設定で開始しますか？ (y/n): " answer
@@ -170,9 +218,13 @@ main() {
 		echo "⏰ 作業開始！集中しましょう！"
 		echo ""
 		
-		# BGM再生開始
-		if ! play_bgm; then
-			echo "⚠️  BGMなしで続行します"
+		# BGM再生開始（BGMモードが"none"でなければ再生）
+		if [ "$BGM_MODE" != "none" ]; then
+			if ! play_bgm; then
+				echo "⚠️  BGMなしで続行します"
+			fi
+		else
+			echo "🔇 BGMなしで作業開始"
 		fi
 		
 		# 作業時間カウントダウン

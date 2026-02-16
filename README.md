@@ -5,11 +5,12 @@
 ## ✨ 特徴
 
 - ⏱️ **ポモドーロテクニック**: カスタマイズ可能な作業時間と休憩時間
-- 🎵 **自動BGM再生**: YouTubeからランダムにピアノ系作業用BGMを自動再生
+- 🎵 **自動BGM再生**: YouTubeから自動でBGMを再生（ランダム選択 or カスタム検索）
+- 🎚️ **BGMのON/OFF**: BGMなしでの使用も可能
 - 📊 **カウントダウン表示**: リアルタイムで残り時間を表示
 - 🔔 **通知音**: 作業・休憩の切り替え時にベル音で通知（3回）
 - 📈 **セッション数カウント**: 何セッション完了したか記録
-- 🎯 **柔軟な設定**: 起動時に作業時間・休憩時間を自由に設定可能
+- 🎯 **柔軟な設定**: 起動時に作業時間・休憩時間・BGMモードを自由に設定可能
 
 ## 📋 必要なもの
 
@@ -73,10 +74,10 @@ mpv --version
 
 ```bash
 # wgetを使う場合
-wget https://raw.githubusercontent.com/a-lost-social-misfit/pomodoro-timer/main/pomodoro_timer.sh
+wget https://raw.githubusercontent.com/a-lost-social-misfit/pomodoro-timer/main/pomodoro_timer
 
 # curlを使う場合
-curl -O https://raw.githubusercontent.com/a-lost-social-misfit/pomodoro-timer/main/pomodoro_timer.sh
+curl -O https://raw.githubusercontent.com/a-lost-social-misfit/pomodoro-timer/main/pomodoro_timer
 ```
 
 ### 2. 実行権限を付与
@@ -91,9 +92,9 @@ chmod +x pomodoro_timer
 ./pomodoro_timer
 ```
 
-### 4. 時間を設定
+### 4. 設定を入力
 
-起動すると以下のように時間設定を聞かれます：
+起動すると以下のように設定を聞かれます：
 
 ```
 🍅 ポモドーロタイマー with BGM
@@ -104,46 +105,87 @@ chmod +x pomodoro_timer
 作業時間を入力してください（分）[デフォルト: 25]: 30
 休憩時間を入力してください（分）[デフォルト: 5]: 10
 
+🎵 BGM設定:
+
+BGMを再生しますか？ (y/n) [デフォルト: y]: y
+
+BGMモードを選択してください:
+  1) ランダム選択（おすすめ）
+  2) 自分でキーワードを入力
+選択 (1/2) [デフォルト: 1]: 1
+
 ✅ 設定完了:
   作業時間: 30分
   休憩時間: 10分
+  BGM: ランダム選択
 
 この設定で開始しますか？ (y/n): y
 ```
 
-- **Enterキーのみ**: デフォルト値（作業25分/休憩5分）を使用
-- **数字を入力**: 好きな時間（分）を設定
-- **テスト用**: `1`と`1`を入力すると1分ずつで動作確認できます
+**設定のポイント:**
+- **時間設定**: Enterキーのみでデフォルト値（作業25分/休憩5分）を使用
+- **BGM設定**: 
+  - BGMなし: `n` を入力
+  - ランダム選択: `y` → `1` (またはEnter連打)
+  - カスタム検索: `y` → `2` → キーワード入力
 
 ## 💡 使用例
 
-### 標準的なポモドーロ（25分作業 / 5分休憩）
+### 標準的なポモドーロ（25分作業 / 5分休憩 / BGMランダム）
 
 ```bash
-./pomodoro_timer.sh
+./pomodoro_timer
 # 作業時間: Enter（デフォルト25分）
 # 休憩時間: Enter（デフォルト5分）
+# BGM再生: Enter（デフォルトy）
+# BGMモード: Enter（デフォルト1: ランダム）
 ```
 
-### カスタム設定（50分作業 / 10分休憩）
+### BGMなしで集中したい場合
 
 ```bash
-./pomodoro_timer.sh
+./pomodoro_timer
 # 作業時間: 50
 # 休憩時間: 10
+# BGM再生: n
+```
+
+### カスタムBGMで作業（ジャズカフェミュージック）
+
+```bash
+./pomodoro_timer
+# 作業時間: Enter
+# 休憩時間: Enter
+# BGM再生: y
+# BGMモード: 2
+# キーワード: jazz cafe music
+```
+
+### 自然音で作業（雨の音）
+
+```bash
+./pomodoro_timer
+# 作業時間: 30
+# 休憩時間: 5
+# BGM再生: y
+# BGMモード: 2
+# キーワード: rain sounds for studying
 ```
 
 ### テスト実行（1分作業 / 1分休憩）
 
 ```bash
-./pomodoro_timer.sh
+./pomodoro_timer
 # 作業時間: 1
 # 休憩時間: 1
+# BGM再生: n（テストなのでBGMなしが早い）
 ```
 
 ## 🎵 BGMについて
 
-以下のキーワードでYouTubeを検索し、ランダムに1つを選んで自動再生します：
+### ランダム選択モード
+
+以下のキーワードからランダムに1つを選んで自動再生します：
 
 - piano study music 1 hour
 - relaxing piano focus music
@@ -151,7 +193,22 @@ chmod +x pomodoro_timer
 - calm piano concentration music
 - ambient piano work music
 
-BGMの音量は50%に設定されています。変更したい場合はスクリプト内の`--volume=50`の数値を編集してください。
+### カスタム検索モード
+
+好きなキーワードでYouTubeを検索できます。例：
+
+- `jazz cafe music` - ジャズカフェ
+- `nature sounds rain` - 雨の音
+- `classical music study` - クラシック音楽
+- `white noise` - ホワイトノイズ
+- `ocean waves` - 波の音
+- `forest ambience` - 森の環境音
+
+### BGM設定
+
+- **音量**: デフォルトで50%に設定されています
+- **変更方法**: スクリプト内の`--volume=50`の数値を編集（0〜100）
+- **BGMなし**: 起動時に「BGMを再生しますか？」で `n` を選択
 
 ## ⌨️ 操作方法
 
@@ -210,13 +267,13 @@ BGMの音量は50%に設定されています。変更したい場合はスク�
 
 ```bash
 # 実行権限があるか確認
-ls -l pomodoro_timer.sh
+ls -l pomodoro_timer
 
 # 権限がない場合は付与
-chmod +x pomodoro_timer.sh
+chmod +x pomodoro_timer
 
 # bashで直接実行
-bash pomodoro_timer.sh
+bash pomodoro_timer
 ```
 
 ### BGMが停止しない
@@ -238,6 +295,8 @@ killall mpv
 - **ユーザー入力**: `read -rp` でプロンプト付き入力
 - **入力バリデーション**: 正規表現 `=~` で数値チェック
 - **デフォルト値**: 空入力時の処理
+- **条件分岐**: `[[ ]]` と `if/else/elif` での複雑な条件判断
+- **変数のスコープ**: `local` でローカル変数を定義
 - **配列**: `BGM_KEYWORDS=(...)` で複数の値を管理
 - **ランダム選択**: `$RANDOM` を使った乱数生成
 - **バックグラウンド実行**: `&` でプロセスをバックグラウンド化
@@ -246,8 +305,8 @@ killall mpv
 - **コマンド存在チェック**: `command -v` で依存関係確認
 - **関数**: コードの再利用と整理
 - **算術展開**: `$((式))` で計算
-- **条件分岐**: `[[ ]]` と `if/else`
 - **ループ**: `while true` で無限ループ
+- **リダイレクト**: `&> /dev/null` で出力を破棄
 
 ## 📝 ライセンス
 
@@ -263,10 +322,12 @@ Pull Requestも歓迎します！
 - [ ] デスクトップ通知の追加（`notify-send`）
 - [ ] 統計機能（1日の完了セッション数を保存）
 - [ ] 設定ファイルのサポート（`.pomodororc`）
+- [ ] BGMのお気に入りリスト機能
 - [ ] Spotify連携オプション
-- [ ] カスタムBGM URL指定機能
+- [ ] カスタムBGM URL直接指定機能
 - [ ] カラーテーマのカスタマイズ
 - [ ] 長い休憩（4セッション後に15分休憩）の自動挿入
+- [ ] BGM音量の実行中調整機能
 
 ## 🙏 謝辞
 
